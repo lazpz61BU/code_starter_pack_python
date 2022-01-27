@@ -12,7 +12,7 @@ flask-heroku = "*"
 flask-cors = "*"
 gunicorn = "*"
 psycopg2 = "*"
-sqlalchemy = "*"
+sqlalchemy = "<1.4.0"
 python-dotenv = "*"
 
 [dev-packages]
