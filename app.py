@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///' + os.path.join(basedir, 'app.sqlite')
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config['SQLALCHEMY_TRACK_MODIFICATION'] = False
 
 db = SQLAlchemy(app)
@@ -26,7 +26,7 @@ heroku = Heroku(app)
 CORS(app)
 
 
-# Class where the guide is inheriting from db.model and settign up to be able to send data to the Database using JSON
+# Class where the guide is inheriting from db.model and setting up to be able to send data to the Database using JSON
 
 class Website(db.Model):
     id =  db.Column(db.Integer, primary_key=True)
@@ -53,16 +53,16 @@ def add_website():
     if request.content_type != "application/json":
         return "Error: Data must be sent as JSON."
 
-        post_data = request.get_json()
-        resource = post_data.get("resource")
-        category = post_data.get("category")
-        url = post_data.get("url")
+    post_data = request.get_json(force=True)
+    resource = post_data.get("resource")
+    category = post_data.get("category")
+    url = post_data.get("url")
 
-        record = Website(resource, category, url)
-        db.session.add(record)
-        db.session.commit()
+    record = Website(resource, category, url)
+    db.session.add(record)
+    db.session.commit()
 
-        return jsonify("Resource Addedd Successfully")
+    return jsonify("Resource Addedd Successfully")
 
 # This endpoint is used to add multiple website in the database at once
 @app.route("/website/add/multiple", methods=["POST"])
@@ -70,8 +70,8 @@ def add_multiple_websites():
     if request.content_type != "application/json":
         return jsonify("Error: Data must be sent as JSON")
 
-    post_data = request.get_json()
-    for website in post_date:
+    post_data = request.get_json(force=True)
+    for website in post_data:
         record = Website(website["resource"],website["category"],website["url"])
         db.session.add(record)
 
