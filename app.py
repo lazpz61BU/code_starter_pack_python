@@ -33,7 +33,7 @@ class Website(db.Model):
     resource = db.Column(db.String, nullable=False)
     category = db.Column(db.String, nullable=False)
     url = db.Column(db.String, nullable=False)
-    logo = db.Column(db.String nullable=False)
+    logo = db.Column(db.String, nullable=False)
 
     def __init__(self, resource, category, url, logo):
         self.resource = resource
