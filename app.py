@@ -33,15 +33,17 @@ class Website(db.Model):
     resource = db.Column(db.String, nullable=False)
     category = db.Column(db.String, nullable=False)
     url = db.Column(db.String, nullable=False)
+    logo = db.Column(db.String nullable=False)
 
-    def __init__(self, resource, category, url):
+    def __init__(self, resource, category, url, logo):
         self.resource = resource
         self.category = category
         self.url = url
+        self.logo = logo
 
 class WebsiteSchema(ma.Schema):
     class Meta:
-        fields = ("id", "resource", "category", "url")
+        fields = ("id", "resource", "category", "url", "logo")
 
 website_schema =  WebsiteSchema()
 multiple_website_schema = WebsiteSchema(many=True)
@@ -57,8 +59,9 @@ def add_website():
     resource = post_data.get("resource")
     category = post_data.get("category")
     url = post_data.get("url")
+    logo = post_data.get("logo")
 
-    record = Website(resource, category, url)
+    record = Website(resource, category, url, logo)
     db.session.add(record)
     db.session.commit()
 
@@ -72,12 +75,12 @@ def add_multiple_websites():
 
     post_data = request.get_json(force=True)
     for website in post_data:
-        record = Website(website["resource"],website["category"],website["url"])
+        record = Website(website["resource"],website["category"],website["url"],website["logo"])
         db.session.add(record)
 
     db.session.commit()
 
-    return jsonify("All website added")
+    return jsonify("All Resources Added Successfully")
 
 # This Endpoint is to get all of the websites being stored in the database
 @app.route("/website/get", methods=["GET"])
@@ -92,7 +95,7 @@ def delete_websites_by_id(id):
     website = db.session.query(Website).filter(Website.id == id).first()
     db.session.delete(website)
     db.session.commit()
-    return jsonify("Website Deleted")
+    return jsonify("Resource Deleted Successfully")
 
 # This is allowing the file to run which is just boilerplate code
 if __name__ == "__main__":
