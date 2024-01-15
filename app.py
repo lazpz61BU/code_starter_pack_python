@@ -30,23 +30,6 @@ db_connection_settings = {
     "port": "5432",
 }
 
-class Website(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(255))
-    logo = db.Column(db.String(255))
-    resource = db.Column(db.String(255))
-    url = db.Column(db.String(255))
-
-    def __init__(self, resource, category, url, logo):
-        self.resource = resource
-        self.category = category
-        self.url = url
-        self.logo = logo
-
-class WebsiteSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = Website
-
 # Class where the guide is inheriting from db.model and setting up to be able to send data to the Database using JSON
 
 class Website(db.Model):
@@ -106,7 +89,7 @@ def insert_website(json_data_list):
 
 #API for inputting website via JSON
         #Endpoint for sending Website data to create tables in the DB
-@app.route("/api/getWebsites", method=["POST"])
+@app.route("/api/addWebsites", methods=["POST"])
 def add_websites():
     try:
         json_data_list = request.json
@@ -115,58 +98,77 @@ def add_websites():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/getWebsite", methods=["GET"])
+def get_equipment():
+    try:
+        conn = psycopg2.connect(**db_connection_settings)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM website")
+
+        columns = [desc[0] for desc in cursor.description]
+        equipment_data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+
+        return jsonify(equipment_data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 
 
 
+# ##Everything below is part of an older build of this Python please disregard
+# # Endpoints for the API The below endpoint is used to add one website to the database
+# @app.route("/website/add", methods=["POST"])
+# def add_website():
+#     if request.content_type != "application/json":
+#         return "Error: Data must be sent as JSON."
 
-##Everything below is part of an older build of this Python please disregard
-# Endpoints for the API The below endpoint is used to add one website to the database
-@app.route("/website/add", methods=["POST"])
-def add_website():
-    if request.content_type != "application/json":
-        return "Error: Data must be sent as JSON."
+#     post_data = request.get_json(force=True)
+#     resource = post_data.get("resource")
+#     category = post_data.get("category")
+#     url = post_data.get("url")
+#     logo = post_data.get("logo")
 
-    post_data = request.get_json(force=True)
-    resource = post_data.get("resource")
-    category = post_data.get("category")
-    url = post_data.get("url")
-    logo = post_data.get("logo")
+#     record = Website(resource, category, url, logo)
+#     db.session.add(record)
+#     db.session.commit()
 
-    record = Website(resource, category, url, logo)
-    db.session.add(record)
-    db.session.commit()
+#     return jsonify("Resource Addedd Successfully")
 
-    return jsonify("Resource Addedd Successfully")
+# # This endpoint is used to add multiple website in the database at once
+# @app.route("/website/add/multiple", methods=["POST"])
+# def add_multiple_websites():
+#     if request.content_type != "application/json":
+#         return jsonify("Error: Data must be sent as JSON")
 
-# This endpoint is used to add multiple website in the database at once
-@app.route("/website/add/multiple", methods=["POST"])
-def add_multiple_websites():
-    if request.content_type != "application/json":
-        return jsonify("Error: Data must be sent as JSON")
+#     post_data = request.get_json(force=True)
+#     for website in post_data:
+#         record = Website(website["resource"],website["category"],website["url"],website["logo"])
+#         db.session.add(record)
 
-    post_data = request.get_json(force=True)
-    for website in post_data:
-        record = Website(website["resource"],website["category"],website["url"],website["logo"])
-        db.session.add(record)
+#     db.session.commit()
 
-    db.session.commit()
-
-    return jsonify("All Resources Added Successfully")
-# This Endpoint is to get all of the websites being stored in the database
-@app.route("/website/get", methods=["GET"])
-def get_all_websites():
+#     return jsonify("All Resources Added Successfully")
+# # This Endpoint is to get all of the websites being stored in the database
+# @app.route("/website/get", methods=["GET"])
+# def get_all_websites():
     
-    all_websites = db.session.query(Website).all()
-    return jsonify(multiple_website_schema.dump(all_websites))
-# This is an endpoint to delete a website stored in the database
-@app.route("/website/delete/<id>", methods=["DELETE"])
-def delete_websites_by_id(id):
-    website = db.session.query(Website).filter(Website.id == id).first()
-    db.session.delete(website)
-    db.session.commit()
-    return jsonify("Resource Deleted Successfully")
+#     all_websites = db.session.query(Website).all()
+#     return jsonify(multiple_website_schema.dump(all_websites))
+# # This is an endpoint to delete a website stored in the database
+# @app.route("/website/delete/<id>", methods=["DELETE"])
+# def delete_websites_by_id(id):
+#     website = db.session.query(Website).filter(Website.id == id).first()
+#     db.session.delete(website)
+#     db.session.commit()
+#     return jsonify("Resource Deleted Successfully")
+
+
+
 
 # This is allowing the file to run which is just boilerplate code
 if __name__ == "__main__":
